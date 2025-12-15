@@ -1,6 +1,4 @@
 - 👋 Hi, I’m @santhan22
-- 👀 I’m interested in Microcontrollers and Embedded Systems
-- 🌱 I’m currently learning FreeRTOS, STM32 and Machine Learning
 - 📫 How to reach me ...santhanvarma2445@gmail.com
 - 😄 Pronouns: ...He/Him
 
