@@ -1,0 +1,209 @@
+What Does “Memory” Mean in LLM Applications?
+
+(Markdown Cell)
+
+Large Language Models (LLMs):
+
+Are stateless
+
+Do not remember previous messages
+
+Only respond to the current prompt
+
+👉 Memory allows the application to:
+
+Store past messages
+
+Inject them into future prompts
+
+Maintain conversation continuity
+
+❓ 2. Why Session IDs Are Needed
+
+(Markdown Cell)
+
+In real applications:
+
+Many users chat with the AI at the same time
+
+Each user needs their own conversation context
+
+💡 This is where Session IDs come in.
+
+🧩 3. What is a Session ID?
+
+(Markdown Cell)
+
+A Session ID is:
+
+A unique identifier (e.g., user ID, browser session, chat ID)
+
+Used to map memory to a specific conversation
+
+Session ID → Conversation Memory
+
+Key Idea
+
+Different session IDs = different memory = different context
+
+🧠 4. Memory Architecture with Session ID
+
+(Markdown Cell)
+
+User Input
+   ↓
+Session ID
+   ↓
+Retrieve Memory for that Session
+   ↓
+Prompt → LLM → Response
+   ↓
+Store back in Memory (same Session ID)
+
+
+Each session has its own memory container.
+
+⚙️ 5. Install Dependencies
+
+(Code Cell)
+
+!pip install -q langchain langchain-openai
+
+🔐 6. Set OpenAI API Key
+
+(Code Cell)
+
+import os
+os.environ["OPENAI_API_KEY"] = "YOUR_OPENAI_API_KEY"
+
+🤖 7. Baseline: No Memory
+
+(Markdown Cell)
+
+Let’s confirm that the LLM does not remember anything by default.
+
+Code: Stateless LLM
+
+(Code Cell)
+
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI()
+
+print(llm.predict("My name is Alice"))
+print(llm.predict("What is my name?"))
+
+
+❌ No memory.
+
+🧠 8. Basic Conversation Memory (Single Session)
+
+(Markdown Cell)
+
+We now add basic conversation memory.
+
+This memory:
+
+Stores the full conversation
+
+Is tied to one session
+
+Code: Conversation Memory
+
+(Code Cell)
+
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
+
+memory = ConversationBufferMemory()
+
+chat = ConversationChain(
+    llm=ChatOpenAI(),
+    memory=memory
+)
+
+chat.predict(input="My name is Alice")
+chat.predict(input="What is my name?")
+
+
+✅ Memory works within the same session.
+
+🆔 9. Using Session IDs (Multiple Sessions)
+
+(Markdown Cell)
+
+Now we simulate multiple users by using different session IDs.
+
+Each session ID gets:
+
+Its own memory
+
+Its own context
+
+🧠 10. Session-Based Memory Store
+
+(Markdown Cell)
+
+We create a dictionary:
+
+session_id → Conversation Memory
+
+
+This is how real apps manage memory.
+
+Code: Session Memory Manager
+
+(Code Cell)
+
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
+from langchain_openai import ChatOpenAI
+
+# Store memory per session
+memory_store = {}
+
+def get_chat_for_session(session_id):
+    if session_id not in memory_store:
+        memory_store[session_id] = ConversationBufferMemory()
+
+    return ConversationChain(
+        llm=ChatOpenAI(),
+        memory=memory_store[session_id]
+    )
+
+🧪 11. Test Different Session IDs
+
+(Markdown Cell)
+
+Session A
+
+(Code Cell)
+
+chat_a = get_chat_for_session("session_A")
+
+chat_a.predict(input="My name is Alice")
+chat_a.predict(input="What is my name?")
+
+Session B
+
+(Markdown Cell)
+
+(Code Cell)
+
+chat_b = get_chat_for_session("session_B")
+
+chat_b.predict(input="What is my name?")
+chat_b.predict(input="My name is Bob")
+chat_b.predict(input="What is my name?")
+
+🔍 12. Observations
+
+(Markdown Cell)
+
+Session ID	Stored Name
+session_A	Alice
+session_B	Bob
+
+✔ Sessions are completely isolated
+✔ No memory leakage
+✔ Each user gets personalized context
